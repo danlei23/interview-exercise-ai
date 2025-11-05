@@ -1,79 +1,87 @@
-# 🧠 AI Coding Challenge: Knowledge Assistant for Support Team
+🧠 Support Knowledge Assistant
 
-Welcome to the AI engineering challenge! This is part of the interview process for the AI Engineer role (1–3 years experience). The goal is to design a minimal **LLM-powered RAG system** that helps a support team respond to customer tickets efficiently using relevant documentation.
+A lightweight RAG (Retrieval-Augmented Generation) system built with FastAPI, FAISS, SentenceTransformers, and Ollama.
+It acts as a support knowledge assistant that retrieves internal policy documents and generates structured JSON answers following the Model Context Protocol (MCP).
 
----
+🚀 Features
 
-## 📌 Problem Statement
+Semantic retrieval over local Markdown policy files (data/docs/*.md)
 
-You will build a **Knowledge Assistant** that can analyze customer support queries and return structured, relevant, and helpful responses. The assistant should use a **Retrieval-Augmented Generation (RAG)** pipeline powered by an **LLM** and follow the **Model Context Protocol (MCP)** to produce structured output.
+Embedding + FAISS vector search (all-MiniLM-L6-v2)
 
-### 🎯 Sample Input (Support Ticket):
-```
-My domain was suspended and I didn’t get any notice. How can I reactivate it?
-```
-### ✅ Expected Output (MCP-compliant JSON):
-```json
+Local LLM generation via Ollama (default: llama3)
+
+Strict JSON responses:
+
 {
-  "answer": "Your domain may have been suspended due to a violation of policy or missing WHOIS information. Please update your WHOIS details and contact support.",
-  "references": ["Policy: Domain Suspension Guidelines, Section 4.2"],
-  "action_required": "escalate_to_abuse_team"
+  "answer": "...",
+  "references": ["..."],
+  "action_required": "..."
 }
-```
 
-## 🔧 Requirements
-### 1.  RAG Pipeline
-- Embed sample support docs and policy FAQs (provided or synthetic).
-- Use a vector database (e.g., FAISS, Qdrant, etc.) to retrieve context based on the query.
+🧩 Project Structure
+src/app/
+├── main.py              # FastAPI entrypoint
+├── retriever.py         # FAISS + embedding retrieval
+├── llm_client.py        # Ollama client call
+├── prompt_template.py   # System/User prompt templates (MCP)
+├── utils.py             # JSON parsing & validation
+└── models.py            # Pydantic models
 
-### 2.  LLM Integration
-- Use a language model (e.g., OpenAI GPT, LLaMA2 via Ollama, Mistral, etc.)
-- Inject context and query into the prompt to generate the final answer.
+⚙️ Setup & Run
+# 1. Create virtual env
+python3 -m venv .venv
+source .venv/bin/activate
 
-### 3.  MCP (Model Context Protocol)
-- Prompt should have clearly defined role, context, task, and output schema.
-- Output must be valid JSON in the following format:
-  ```json
-  {
-    "answer": "...",
-    "references": [...],
-    "action_required": "..."
-  }
-  ```
-### 4.  API Endpoint
-- Expose a single endpoint: POST /resolve-ticket
-- Input: { "ticket_text": "..." }
-- Output: structured JSON response as shown above
+# 2. Install dependencies
+pip install -r requirements.txt
 
-## 📂 Suggested Tech Stack (Use what you're comfortable with)
-- Languages: Python or Go
-- Embedding Models: Sentence Transformers / OpenAI / HuggingFace
-- Vector Store: FAISS, Qdrant, Weaviate, etc.
-- LLMs: OpenAI, Ollama, Local LLM, or APIs
-- API: FastAPI (Python), Gin/Fiber (Go)
-- Docker Compose
+# 3. Start Ollama service
+ollama serve
+ollama pull llama3
 
-## 📝 Scoring Criteria (Total: 100 Points)
+# 4. Run FastAPI app
+uvicorn src.app.main:app --reload --port 8000
 
-| Criteria                     | Description                                                                 | Points |
-|------------------------------|-----------------------------------------------------------------------------|--------|
-| Correctness & Functionality | Does the assistant generate accurate and relevant responses?                 | 35     |
-| RAG Architecture           | Is the retrieval pipeline well-structured, efficient, and properly integrated? | 20     |
-| Prompt Design (MCP)        | Is the prompt construction clear, structured, and aligned with MCP principles? | 15     |
-| Code Quality & Modularity | Is the code clean, readable, modular, and maintainable and covered with unit tests?                      | 20     |
-| Documentation             | Is the `README.md` clear, with setup instructions and design explanation?    | 10     |
-|                             | **Total**                                                                   | **100** |
 
-## 🚀 Getting Started
-- Fork this repository (do not clone directly)
-- Work within your forked copy
-- Add your code in /src and include a clear README.md with setup instructions
-- Commit your changes regularly
-- Once complete, follow the submission instructions below
+Access API docs at 👉 http://127.0.0.1:8000/docs
 
-## 📬 Submission Instructions
-- You have 1 week to complete the challenge.
-- We expect this to take around 1–2 focused days of work.
-- Once complete:
-  - Push your forked repo to GitHub
-  - Submit the repository link through the portal in the original email.
+🧪 Example
+
+Request
+
+{
+  "ticket_text": "My domain was suspended and I didn’t get any notice. How can I reactivate it?"
+}
+
+
+Response
+
+{
+  "answer": "Your domain may have been suspended due to missing WHOIS or unpaid billing. Please correct these and contact support.",
+  "references": ["policy domain suspension"],
+  "action_required": "request_more_info"
+}
+
+✅ Tech Stack
+
+FastAPI – API framework
+
+SentenceTransformers – text embeddings
+
+FAISS – similarity search
+
+Ollama – local LLM inference
+
+Python 3.10+
+
+💡 Notes
+
+Restart the server after editing data/docs to rebuild FAISS index.
+
+Keep Ollama running in the background before starting FastAPI.
+
+Set environment variables if using a custom model:
+
+export OLLAMA_MODEL=llama3
+export OLLAMA_HOST=http://localhost:11434
